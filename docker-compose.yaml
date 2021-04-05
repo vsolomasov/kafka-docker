@@ -5,8 +5,6 @@ services:
         restart: "no"
         ports:
             - 2181:2181
-        volumes:
-            - ./data/zookeeper:/data
     kafka:
         image: wurstmeister/kafka:latest
         restart: "no"
