@@ -2,14 +2,20 @@ version: "3.3"
 services:
     zookeeper:
         image: wurstmeister/zookeeper:latest
+        restart: "no"
         ports:
             - 2181:2181
+        volumes:
+            - ./data/zookeeper:/data
     kafka:
-        image: wurstmeister/kafka:latest    
+        image: wurstmeister/kafka:latest
+        restart: "no"
         ports:
             - 9092:9092
         depends_on:
             - zookeeper
+        volumes:
+            - ./data/kafka:/kafka
         environment:
             KAFKA_CREATE_TOPICS: "input:2:1,output:2:1"
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -19,6 +25,7 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
     kafdrop:
         image: obsidiandynamics/kafdrop:latest
+        restart: "no"
         ports:
             - 9000:9000
         depends_on:
