@@ -1,33 +1,41 @@
-version: "3.3"
+---
+version: '3'
+
 services:
-    zookeeper:
-        image: wurstmeister/zookeeper:latest
-        restart: "no"
-        ports:
-            - 2181:2181
-    kafka:
-        image: wurstmeister/kafka:latest
-        restart: "no"
-        ports:
-            - 9092:9092
-        depends_on:
-            - zookeeper
-        volumes:
-            - ./data/kafka:/kafka
-        environment:
-            KAFKA_CREATE_TOPICS: "input:2:1,output:2:1"
-            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_LISTENERS: "INTERNAL://:9093,EXTERNAL://:9092"
-            KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9093,EXTERNAL://localhost:9092"
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
-            KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
-    kafdrop:
-        image: obsidiandynamics/kafdrop:latest
-        restart: "no"
-        ports:
-            - 9000:9000
-        depends_on:
-            - zookeeper
-            - kafka
-        environment:
-            KAFKA_BROKERCONNECT: kafka:9093
+  kafka0:
+    image: confluentinc/cp-kafka:7.3.1
+    hostname: kafka0
+    container_name: kafka0
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka0:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka0:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka0:29092,CONTROLLER://kafka0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_JMX_PORT: 9997
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka0 -Dcom.sun.management.jmxremote.rmi.port=9997
+    ports:
+      - "9092:9092"
+      - "9997:9997"
+    volumes:
+      - ./kafka/config.sh:/tmp/config.sh
+    command: "bash -c 'if [ ! -f /tmp/config.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/config.sh && /etc/confluent/docker/run ; fi'"
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka0:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka0

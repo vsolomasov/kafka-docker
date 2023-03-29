@@ -4,12 +4,14 @@
 + [Docker (machine, compose)](https://www.docker.com/get-started)
 
 ## Containers
-+ [Zookeeper](https://hub.docker.com/r/wurstmeister/zookeeper/)
-+ [Kafka](https://hub.docker.com/r/wurstmeister/kafka)
-+ [Kafdrop](https://hub.docker.com/r/obsidiandynamics/kafdrop)
++ [Kafka](https://hub.docker.com/r/confluentinc/cp-kafka)
++ [Kafka UI](https://hub.docker.com/r/provectuslabs/kafka-ui)
 
 ## Commands
 ```
-$ docker-compose up -d // start
-$ docker-compose down // stop
+$ docker-compose up -d
+$ docker-compose down
 ```
+
+## Links
++ [Kafka UI](http://localhost:8080)
